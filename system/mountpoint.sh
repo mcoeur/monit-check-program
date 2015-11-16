@@ -1,3 +1,5 @@
+#!/bin/bash
+
 EXPECTED_RESULT="$1 is a mountpoint"
 STATUS=`mountpoint $1`
 
