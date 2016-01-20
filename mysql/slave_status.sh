@@ -7,13 +7,23 @@ SLAVE_OK_STATUS="Waiting for master to send event"
 
 QUERY="SHOW SLAVE STATUS\G"
 STATUS=`echo "$QUERY" | mysql -u root -p${MYSQL_PASSWORD}`
+if [ $? -gt 0 ]; then
+	echo "Could not connect to database"
+	exit 1
+fi
 
 SECONDS_BEHIND_MASTER=`echo "$STATUS" | grep "Seconds_Behind_Master" | cut -d: -f 2 | sed 's/^[ ]*//'`
 SLAVE_IO_STATE=`echo "$STATUS" | grep "Slave_IO_State" | cut -d: -f 2 | sed 's/^[ ]*//'`
+REGEX='^[0-9]+$'
 
 if [ "${SLAVE_IO_STATE}" != "${SLAVE_OK_STATUS}" ]; then
         echo "Slave status error : "
         echo "$SLAVE_IO_STATE"
+        echo "------- complete output ------"
+        echo "$STATUS"
+        exit 1
+elif ! [[ ${SECONDS_BEHIND_MASTER} =~ ${REGEX} ]]; then
+	echo "Seconds_Behind_Master is not a number"
         echo "------- complete output ------"
         echo "$STATUS"
         exit 1
